@@ -3,11 +3,13 @@ version: '0.1'
 document_dirs:
 - C:\Users\zlzk\Documents\GitHub\notebook\docs
 - D:\zhny-notes
+- C:\Users\zlzk\zhny-projects\drought-ET-irrigation
 # Files with these extensions will be token account in
 extensions:
 - txt
 - md
 - properties
+- py
 exclude:
 - /Users/vzhong/suoha/materials/*
 
