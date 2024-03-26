@@ -2,26 +2,37 @@ import sqlite3
 import os
 import yaml
 
-SETTINGS_FILE_PATH = os.path.abspath(os.path.join(os.getcwd(), "settings.yml"))
 
-DB = "notePrompter.db"
+if os.environ.get("settings.yml"):
+    SETTINGS_FILE_PATH = os.environ.get("settings.yml")
+    print("-------------------SETTINGS_FILE_PATH------------------")
+    print(SETTINGS_FILE_PATH)
+else:
+    SETTINGS_FILE_PATH = os.path.abspath(os.path.join(os.getcwd(), "settings.yml"))
+
+# DB = "notePrompter.db"
+DB = SETTINGS_FILE_PATH + ".db"
 DB_FILE = os.path.abspath(os.path.join(os.getcwd(), DB))
 TABLE = "note_lines"
 
 def init_db():
-    if os.path.exists(DB_FILE):
-        os.remove(DB_FILE)
+    try:
+        if os.path.exists(DB_FILE):
+            os.remove(DB_FILE)
 
-    connection = sqlite3.connect(DB)
-    cursor = connection.cursor()
+        connection = sqlite3.connect(DB)
+        cursor = connection.cursor()
 
-    cursor.execute(f"create table {TABLE} (id integer PRIMARY KEY AUTOINCREMENT, file VARCHAR, content VARCHAR);")
-    connection.commit()
+        cursor.execute(f"create table {TABLE} (id integer PRIMARY KEY AUTOINCREMENT, file VARCHAR, content VARCHAR);")
+        connection.commit()
 
-    cursor.close()
-    connection.close()
+        cursor.close()
+        connection.close()
 
-    print("Done!")
+        print("Done!")
+    except Exception as e:
+        print("-----------------Exception in init_db--------------------")
+        print(str(e))
 
 def init_table():
     with open(SETTINGS_FILE_PATH, "r") as f:

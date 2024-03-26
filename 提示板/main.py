@@ -5,10 +5,21 @@ import time
 import yaml
 import platform
 import re
+import sys
+
+
+try:
+    os.environ["settings.yml"] = sys.argv[1]
+except Exception:
+    print("setting.yml not set....")
+
 
 import sqlite3
 from init import init_db, init_table, DB, TABLE
 from common_functions import read_from_clipboard
+
+
+
 
 
 RELATED_LINES_UP_COUNT = 8
