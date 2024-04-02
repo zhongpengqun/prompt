@@ -6,7 +6,7 @@ import yaml
 import platform
 import re
 import sys
-
+import threading
 
 try:
     os.environ["settings.yml"] = sys.argv[1]
@@ -18,8 +18,7 @@ import sqlite3
 from init import init_db, init_table, DB, TABLE
 from common_functions import read_from_clipboard
 
-
-
+from init import files_modifytime
 
 
 RELATED_LINES_UP_COUNT = 8
@@ -92,13 +91,25 @@ current_keyword = ''
 init_db()
 init_table()
 
+def refresh_db_once_files_change():
+    while True:
+        for f, modifytime in files_modifytime.items():
+            if os.stat(f).st_mtime != modifytime:
+                print('Refreshing DB due to files changed...')
+                init_table()
+                break
+        time.sleep(2)
+
+t1 = threading.Thread(target=refresh_db_once_files_change, name='thread_refresh_db_once_files_change')
+t1.start()
+
 
 while True:
     clipboard_content = read_from_clipboard()
-
     if clipboard_content != current_keyword:
         print('\n\n\n\n')
         if "Windows" in pt:
+            # pass
             os.system('CLS')
         else:
             os.system('clear')
@@ -106,3 +117,5 @@ while True:
         print_keyword_related_note(clipboard_content)
         current_keyword = clipboard_content
     time.sleep(2)
+
+

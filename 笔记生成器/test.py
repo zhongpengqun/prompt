@@ -1,9 +1,10 @@
 #!/usr/bin/python
 import os
+import time
 import platform
 
-from PIL import Image, ImageTk
-from tkinter import Tk, Frame, Menu, Button, Text, IntVar, Toplevel, LEFT, TOP, X, FLAT, RAISED, END, INSERT
+from PIL import Image, ImageTk, ImageGrab
+from tkinter import Tk, Frame, Menu, Button, Text, IntVar, Toplevel, Canvas, PhotoImage, BOTH, LEFT, TOP, X, FLAT, RAISED, END, INSERT, YES
 
 
 SCREENSHOT_SAVED_PATHS = [f"{os.path.dirname(os.path.abspath(__file__))}{ '\\' if 'windows' in platform.platform().lower() else '/'}screenshots",
@@ -23,22 +24,22 @@ class MyCapture:
         screenHeight = root.winfo_screenheight()
 
         #创建顶级组件容器
-        self.top = tkinter.Toplevel(root, width=screenWidth, height=screenHeight)
+        self.top = Toplevel(root, width=screenWidth, height=screenHeight)
 
         #不显示最大化、最小化按钮
         self.top.overrideredirect(True)
-        self.canvas = tkinter.Canvas(self.top,bg='white', width=screenWidth, height=screenHeight)
+        self.canvas = Canvas(self.top,bg='white', width=screenWidth, height=screenHeight)
 
         #显示全屏截图，在全屏截图上进行区域截图
         self.filename = filename
-        self.image = tkinter.PhotoImage(file=filename)
+        self.image = PhotoImage(file=filename)
         self.canvas.create_image(screenWidth//2, screenHeight//2, image=self.image)
  
         self.canvas.bind('<Button-1>', self.onLeftButtonDown)
         self.canvas.bind('<B1-Motion>', self.onLeftButtonMove)
         self.canvas.bind('<ButtonRelease-1>', self.onLeftButtonUp)
         #让canvas充满窗口，并随窗口自动适应大小
-        self.canvas.pack(fill=tkinter.BOTH, expand=tkinter.YES)
+        self.canvas.pack(fill=BOTH, expand=YES)
 
     #鼠标左键按下的位置
     def onLeftButtonDown(self, event):
@@ -66,13 +67,14 @@ class MyCapture:
             self.canvas.delete(lastDraw)
         except Exception as e:
             pass
-        sleep(0.1)
+        time.sleep(0.1)
         #考虑鼠标左键从右下方按下而从左上方抬起的截图
         left, right = sorted([self.X.get(), event.x])
         top, bottom = sorted([self.Y.get(), event.y])
         image = Image.open(self.filename)
         # image.crop的参数为一个四元组，表示裁剪区域的左上角坐标和右下角坐标
         pic = image.crop((left, top, right, bottom))
+        screenshot_folder = ""
         pic.save(os.path.join(f'{screenshot_folder}', f'{str(int(time.time()))}.png'))
         #弹出保存截图对话框
         # fileName = tkinter.filedialog.asksaveasfilename(title='保存截图', filetypes=[("PNG file", "*.png"),("JPEG file", "*.jpeg;*.jpg"),("GIF file","*.gif"),("BMP file","*.bmp")],initialfile=txt1,defaultextension='.png')
@@ -84,10 +86,13 @@ class MyCapture:
 
 
 
+
+
 class ImageNoter(Frame):
     def __init__(self):
         self.screenshot_saved_path = SCREENSHOT_SAVED_PATHS[0]
         self.screenshot_saved_path_hint_text = None
+        self.button_do_screenshot = None
         super().__init__()
         self.initUI()
 
@@ -97,9 +102,9 @@ class ImageNoter(Frame):
 
         toolbar = Frame(self.master, bd=1, relief=RAISED)
 
-        button_do_screenshot = Button(toolbar, text="截图", relief=FLAT, command=self.do_screenshot)
+        self.button_do_screenshot = Button(toolbar, text="截图", relief=FLAT, command=self.do_screenshot)
         button_switch_screenshot_saved_path = Button(toolbar, text="切换截图保存地址", relief=FLAT, command=self.switch_screenshot_saved_path)
-        button_do_screenshot.pack(side=LEFT, padx=2, pady=2)
+        self.button_do_screenshot.pack(side=LEFT, padx=2, pady=2)
         button_switch_screenshot_saved_path.pack(side=LEFT, padx=2, pady=2)
 
         self.init_screenshot_saved_path_hint()
@@ -110,9 +115,6 @@ class ImageNoter(Frame):
 
     def onExit(self):
         self.quit()
-
-    def do_screenshot(self):
-        pass
 
     def switch_screenshot_saved_path(self):
         def refresh_hint(new_hint):
@@ -137,15 +139,27 @@ class ImageNoter(Frame):
         self.switch_screenshot_saved_path()
 
 
-def main():
+    #开始截图
+    def do_screenshot(self):
+        #最小化主窗口
+        # self.state('icon')
+        time.sleep(0.2)
+        filename = 'temp.png'
+        #grab()方法默认对全屏幕进行截图
+        im = ImageGrab.grab()
+        im.save(filename)
+        im.close()
+        #显示全屏幕截图
+        w = MyCapture(filename)
+        self.button_do_screenshot.wait_window(w.top)
+        #截图结束，恢复主窗口，并删除临时的全屏幕截图文件
+        self.state('normal')
+        os.remove(filename)
 
+
+if __name__ == '__main__':
     root = Tk()
     # Top-right
     root.geometry(f'{int(root.winfo_screenwidth()/2)}x{root.winfo_screenheight() - 80}+{root.winfo_screenwidth() - int(root.winfo_screenwidth()/2)}+0')
     ImageNoter()
     root.mainloop()
-
-
-
-if __name__ == '__main__':
-    main()
