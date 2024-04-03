@@ -2,14 +2,18 @@
 import os
 import time
 import platform
+import glob
 
 from PIL import Image, ImageTk, ImageGrab
-from tkinter import Tk, Frame, Menu, Button, Text, IntVar, Toplevel, Canvas, PhotoImage, BOTH, LEFT, TOP, X, FLAT, RAISED, END, INSERT, YES
+from tkinter import Tk, Frame, Menu, Button, Text, IntVar, Toplevel, Canvas, PhotoImage, \
+    BOTH, LEFT, TOP, X, FLAT, RAISED, END, INSERT, YES, NW
 
 
-SCREENSHOT_SAVED_PATHS = [f"{os.path.dirname(os.path.abspath(__file__))}{ '\\' if 'windows' in platform.platform().lower() else '/'}screenshots",
-                          r"C:\Users\zlzk\Documents\GitHub\notebook\docs\assets\我的截图"
-                          ]
+SCREENSHOT_SAVED_PATHS = [
+    r"C:\Users\zlzk\Documents\GitHub\prompt\笔记生成器\screenshots",
+    f"{os.path.dirname(os.path.abspath(__file__))}{ '\\' if 'windows' in platform.platform().lower() else '/'}screenshots",
+    r"C:\Users\zlzk\Documents\GitHub\notebook\docs\assets\我的截图"
+]
 
 
 # 用来显示全屏幕截图并响应二次截图的窗口类
@@ -85,9 +89,6 @@ class MyCapture:
         self.top.destroy()
 
 
-
-
-
 class ImageNoter(Frame):
     def __init__(self):
         self.screenshot_saved_path = SCREENSHOT_SAVED_PATHS[0]
@@ -102,12 +103,15 @@ class ImageNoter(Frame):
 
         toolbar = Frame(self.master, bd=1, relief=RAISED)
 
+        self.button_window_minimize = Button(toolbar, text="窗口最小化", relief=FLAT, command=self.window_minimize)
         self.button_do_screenshot = Button(toolbar, text="截图", relief=FLAT, command=self.do_screenshot)
         button_switch_screenshot_saved_path = Button(toolbar, text="切换截图保存地址", relief=FLAT, command=self.switch_screenshot_saved_path)
+        self.button_window_minimize.pack(side=LEFT, padx=2, pady=2)
         self.button_do_screenshot.pack(side=LEFT, padx=2, pady=2)
         button_switch_screenshot_saved_path.pack(side=LEFT, padx=2, pady=2)
 
         self.init_screenshot_saved_path_hint()
+        self.init_canvas()
 
         toolbar.pack(side=TOP, fill=X)
         self.pack()
@@ -138,12 +142,38 @@ class ImageNoter(Frame):
         self.screenshot_saved_path_hint_text = Text(self, height=1, width=int(self.winfo_screenwidth()/2))
         self.switch_screenshot_saved_path()
 
+    def get_latest_screenshotimage_path(self):
+        # project_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))
+        # jietu_folder = os.path.abspath(os.path.join(project_root, "docs/assets/我的截图"))
+        latest_image = max(glob.glob(f'{self.screenshot_saved_path}/*'), key=os.path.getctime)
+        return latest_image
 
-    #开始截图
+    def init_canvas(self):
+        print(self.get_latest_screenshotimage_path())
+        original_image = Image.open(self.get_latest_screenshotimage_path())
+        # 将PIL图像转换为Tkinter PhotoImage对象
+        tk_image = ImageTk.PhotoImage(original_image)
+        # 创建Canvas并显示图像
+        # canvas = Canvas(root, width=tk_image.width(), height=tk_image.height())
+        canvas = Canvas(self, bg="red", width=100, height=100)
+        canvas.create_image(0, 0, anchor=NW, image=tk_image)
+        canvas.pack()
+
+    # todo, 待研究
+    def window_minimize(self):
+        # print(self.button_window_minimize.cget('text'))
+        # print(self.button_window_minimize.cget('text') == '窗口最小化')
+        if self.button_window_minimize.cget('text') == "窗口最小化":
+            root.geometry('100x20')
+            self.button_window_minimize.config(text="窗口还原")
+            time.sleep(0.5)
+
+        elif self.button_window_minimize.cget('text') == '窗口还原':
+            root.geometry(f'{int(root.winfo_screenwidth()/2)}x{root.winfo_screenheight() - 80}+{root.winfo_screenwidth() - int(root.winfo_screenwidth()/2)}+0')
+            self.button_window_minimize.config(text="窗口最小化")
+
+    # 开始截图
     def do_screenshot(self):
-        #最小化主窗口
-        # self.state('icon')
-        time.sleep(0.2)
         filename = 'temp.png'
         #grab()方法默认对全屏幕进行截图
         im = ImageGrab.grab()
@@ -153,7 +183,6 @@ class ImageNoter(Frame):
         w = MyCapture(filename)
         self.button_do_screenshot.wait_window(w.top)
         #截图结束，恢复主窗口，并删除临时的全屏幕截图文件
-        self.state('normal')
         os.remove(filename)
 
 
