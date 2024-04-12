@@ -7,6 +7,11 @@ import platform
 import re
 import sys
 import threading
+import signal
+import sys
+
+import pyperclip
+
 
 try:
     os.environ["settings.yml"] = sys.argv[1]
@@ -28,6 +33,14 @@ RELATED_LINES_DOWN_COUNT = 15
 current_clipboard_content = ""
 
 pt = platform.platform()
+
+
+def signal_handler(signal, frame):
+    print('------------ctrl c--------------')
+    # 这种方法是直接终止进程，不会做任何清理工作，包括不会执行finally块的代码
+    os._exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 
 # >>> ireplace('hippo?', 'giraffe!?', 'You want a hiPPO?')
@@ -105,7 +118,10 @@ t1.start()
 
 
 while True:
-    clipboard_content = read_from_clipboard()
+    try:
+        clipboard_content = read_from_clipboard()
+    except pyperclip.PyperclipWindowsException as e:
+        print('Error while read_from_clipboard()!')
     if clipboard_content != current_keyword:
         print('\n\n\n\n')
         if "Windows" in pt:
