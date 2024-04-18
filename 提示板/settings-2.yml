@@ -4,6 +4,7 @@ document_dirs:
 # - C:\Users\zlzk\zhny-projects\API-drought-ET-irrigation
 # Files with these extensions will be token account in
 - C:\Users\zlzk\zhny-projects\drought-SW-irrigation\pyfao56-main\tests\test8_test
+- D:\zhny-notes
 # - C:\Users\zlzk\zhny-projects\drought-SW-irrigation\pyfao56-main\src
 extensions:
 - txt
