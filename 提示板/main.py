@@ -73,7 +73,11 @@ def print_keyword_related_note(keyword):
         conn = sqlite3.connect(DB)
         cursor = conn.cursor()
 
-        cursor.execute(f"select id, file, content from {TABLE} where LOWER(content) like ?;", ("%" + keyword.lower() + "%",))
+        try:
+            cursor.execute(f"select id, file, content from {TABLE} where LOWER(content) like ?;", ("%" + keyword.lower() + "%",))
+        except sqlite3.OperationalError as e:
+            print(f'发生错误, {str(e)}')
+            return
         matched_records = cursor.fetchall()
 
         for _matched_record in matched_records:
