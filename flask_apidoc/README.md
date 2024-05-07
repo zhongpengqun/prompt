@@ -1,0 +1,2 @@
+- 功能：生成简单的API文档
+- 源项目地址：https://github.com/ipconfiger/flask-apidoc （该项目停止了维护，因此本项目对它进行了修改来适应本项目的需求，修改部分也可查看https://github.com/zhongpengqun/flask-apidoc-z）
