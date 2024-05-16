@@ -1,0 +1,16 @@
+version: '0.1'
+# Will search from these documents, item at first position takes higher priority 
+document_dirs:
+- C:\Users\zlzk\Documents\GitHub\notebook\docs
+- C:\Users\zlzk\Documents\GitHub\zhongpengqun.github.io
+- D:\zhny-notes
+- C:\Users\zlzk\zhny-projects\drought-ET-irrigation
+# Files with these extensions will be token account in
+extensions:
+- txt
+- md
+- properties
+- py
+exclude:
+- /Users/vzhong/suoha/materials/*
+
